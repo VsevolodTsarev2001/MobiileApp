@@ -2,8 +2,8 @@ namespace MobiileApp;
 
 public partial class StartPage : ContentPage
 {
-	public List<ContentPage> lehed = new List<ContentPage>() { new TextPage(), new FigurePage()};
-	public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage" };
+	public List<ContentPage> lehed = new List<ContentPage>() { new TextPage(0), new FigurePage(1), new Clicker(2), new Valgusfoor(3)};
+	public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage", "Clicker", "Valgusfoor" };
 	ScrollView sv;
 	VerticalStackLayout vsl;
 	public StartPage()

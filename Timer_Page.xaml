@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MobiileApp.Timer_Page"
+             Title="Timer_Page">
+    <StackLayout>
+        <FlexLayout>
+            <Label x:Name="lbl"
+                   Text="Valjuta nuppule ja siia"
+                   FontSize="Medium"
+                   Background="Beige">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                </Label.GestureRecognizers>
+            </Label>
+            <Button x:Name="timer_btn"
+                    Text="Naita info"
+                    Clicked="timer_btn_Clicked"></Button>
+        </FlexLayout>
+        <Button x:Name="tagasi"
+                Text="Tagasi"
+                FontSize="Large"
+                Clicked="tagasi_Clicked"></Button>
+    </StackLayout>
+</ContentPage>
