@@ -58,6 +58,12 @@
 
 	<ItemGroup>
 	  <None Remove="Resources\Fonts\Lower Pixel Regular 400.otf" />
+	  <None Remove="Resources\Images\back.png" />
+	  <None Remove="Resources\Images\Clicker.jpg" />
+	  <None Remove="Resources\Images\clicker_2.jpg" />
+	  <None Remove="Resources\Images\clicker_3.jpg" />
+	  <None Remove="Resources\Images\clicker_4.png" />
+	  <None Remove="Resources\Images\clicker_5.jpg" />
 	</ItemGroup>
 	
 	

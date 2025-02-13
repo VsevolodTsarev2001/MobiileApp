@@ -1,45 +1,31 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="MobiileApp.Clicker"
-             Title="Clicker">
-    <VerticalStackLayout Spacing="20" Padding="20">
-        <!-- Main Clicker Button -->
-        <Button x:Name="Clickerbtn"
-                ImageSource="clicker_icon.png"
-                BackgroundColor="Transparent"
-                BorderColor="Transparent"
-                HeightRequest="350"
-                WidthRequest="350"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                Clicked="OnClickerbtnClicked" />
+             BackgroundColor="Black">
 
-        <!-- Score Label -->
-        <Label x:Name="scoreLabel"
-               Text="Score: 0"
-               FontSize="24"
-               HorizontalOptions="Center"
-               VerticalOptions="Start"
-               TextColor="White" />
+    <ContentPage.Resources>
+        <Style TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent"/>
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="BorderColor" Value="White"/>
+        </Style>
 
-        <!-- Upgrade Label -->
-        <Label x:Name="upgradeLabel"
-               Text="Upgrade: 20 score"
-               FontSize="18"
-               HorizontalOptions="Center"
-               VerticalOptions="Start"
-               TextColor="White"
-               IsVisible="False" />
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="HorizontalOptions" Value="Center"/>
+        </Style>
+    </ContentPage.Resources>
 
-        <!-- Upgrade Button -->
-        <Button x:Name="Upgradebtn"
-                Text="Upgrade. LVL: 0"
-                WidthRequest="200"
-                HeightRequest="50"
-                HorizontalOptions="Center"
-                VerticalOptions="End"
-                IsVisible="False"
-                Clicked="OnUpgradebtnClicked" />
-    </VerticalStackLayout>
+    <Grid>
+        <VerticalStackLayout>
+            <Label Text="Score: 0" FontSize="24"/>
+            <Label Text="Upgrade: 20 score" FontSize="18" IsVisible="False"/>
+        </VerticalStackLayout>
+
+        <Button x:Name="Clickerbtn" WidthRequest="350" HeightRequest="350" HorizontalOptions="Center" VerticalOptions="Center"/>
+        <Button x:Name="Upgradebtn" Text="Upgrade. LVL: 0" WidthRequest="200" HeightRequest="50" HorizontalOptions="Center" VerticalOptions="End" IsVisible="False"/>
+    </Grid>
 </ContentPage>

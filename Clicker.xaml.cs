@@ -2,27 +2,121 @@ namespace MobiileApp;
 
 public partial class Clicker : ContentPage
 {
-    int score = 0;
-    int upgradeCost = 20;
-    bool upgradeAvailable = false;
-    int lvl = 0;
+
+    private int score = 0;
+    private Label scoreLabel;
+    private Label upgradeLabel;
+    private int upgradeCost = 20;
+    private bool upgradeAvailable = false;
+    private int lvl = 0;
+    private int upgradeLvl;
 
     public Clicker(int k)
     {
-        InitializeComponent();
+        Title = "Clicker";
 
-        // Set initial values for the labels
-        scoreLabel.Text = $"Score: {score}";
-        upgradeLabel.Text = $"Upgrade: {upgradeCost} score";
+        // Initialize UI elements
+        scoreLabel = CreateLabel("Score: 0", 24);
+        upgradeLabel = CreateLabel($"Upgrade: {upgradeCost} score", 18, false);
+
+        Clickerbtn = CreateButton("clicker_icon.png", 350, 350, () =>
+        {
+            score++;
+            UpdateScore();
+            HandleUpgradeVisibility();
+        });
+
+        Upgradebtn = new Button
+        {
+            Text = $"Upgrade. LVL: {lvl}",
+            WidthRequest = 200,
+            HeightRequest = 50,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.End,
+            IsVisible = false
+        };
+
+        Upgradebtn.Clicked += (sender, e) =>
+        {
+            if (score >= upgradeCost)
+            {
+                score -= upgradeCost;
+                lvl++;
+                upgradeCost = (int)(upgradeCost * 2.5);
+                UpdateScore();
+                upgradeLabel.Text = $"Upgrade: {upgradeCost} score";
+                Clickerbtn.Clicked -= DefaultClick;
+                Clickerbtn.Clicked += DoubleClick;
+                Upgradebtn.Text = $"Upgrade. LVL: {lvl}";
+            }
+        };
+
+        Content = new Grid
+        {
+            BackgroundColor = Colors.Black,
+            Children = {
+                new VerticalStackLayout
+                {
+                    Children = { scoreLabel, upgradeLabel },
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Start
+                },
+                Clickerbtn,
+                Upgradebtn
+            }
+        };
     }
 
-    // Handle main click button
-    private void OnClickerbtnClicked(object sender, EventArgs e)
+    private Label CreateLabel(string text, int fontSize, bool isVisible = true)
+    {
+        return new Label
+        {
+            Text = text,
+            FontSize = fontSize,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Start,
+            TextColor = Colors.White,
+            IsVisible = isVisible
+        };
+    }
+
+    private Button CreateButton(string icon, int width, int height, Action onClickAction)
+    {
+        var button = new Button
+        {
+            ImageSource = icon,
+            BackgroundColor = Color.FromArgb("#00000000"),
+            BorderColor = Color.FromArgb("#00000000"),
+            WidthRequest = width,
+            HeightRequest = height,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+        };
+
+        button.Clicked += (sender, e) => onClickAction();
+        return button;
+    }
+
+    private void DefaultClick(object sender, EventArgs e)
     {
         score++;
+        UpdateScore();
+    }
+
+    private void DoubleClick(object sender, EventArgs e)
+    {
+        score += 2;
+        UpdateScore();
+    }
+
+    private void UpdateScore()
+    {
         scoreLabel.Text = $"Score: {score}";
         UpdateButtonIcon();
+    }
 
+    private void HandleUpgradeVisibility()
+    {
         if (score >= upgradeCost && !upgradeAvailable)
         {
             upgradeLabel.IsVisible = true;
@@ -31,60 +125,17 @@ public partial class Clicker : ContentPage
         }
     }
 
-    // Handle upgrade button click
-    private void OnUpgradebtnClicked(object sender, EventArgs e)
-    {
-        if (score >= upgradeCost)
-        {
-            score -= upgradeCost;
-            lvl++;
-            Upgradebtn.Text = $"Upgrade. LVL: {lvl}";
-            scoreLabel.Text = $"Score: {score}";
-            upgradeCost = (int)(upgradeCost * 2.5);
-            upgradeLabel.Text = $"Upgrade: {upgradeCost} score";
-            Clickerbtn.Clicked -= DefaultClick;
-            Clickerbtn.Clicked += DoubleClick;
-        }
-    }
-
-    // Update the button icon based on the score
     private void UpdateButtonIcon()
     {
-        if (score >= 1000)
+        string icon = score switch
         {
-            Clickerbtn.ImageSource = "clicker_icon5.png";
-        }
-        else if (score >= 500)
-        {
-            Clickerbtn.ImageSource = "clicker_icon4.png";
-        }
-        else if (score >= 100)
-        {
-            Clickerbtn.ImageSource = "clicker_icon3.png";
-        }
-        else if (score >= 10)
-        {
-            Clickerbtn.ImageSource = "clicker_icon2.png";
-        }
-        else
-        {
-            Clickerbtn.ImageSource = "clicker_icon.png";
-        }
-    }
+            >= 1000 => "clicker_icon5.png",
+            >= 500 => "clicker_icon4.png",
+            >= 100 => "clicker_3.png",
+            >= 10 => "clicker_2.png",
+            _ => "clicker.png"
+        };
 
-    // Default click behavior
-    private void DefaultClick(object sender, EventArgs e)
-    {
-        score++;
-        scoreLabel.Text = $"Score: {score}";
-        UpdateButtonIcon();
-    }
-
-    // Double-click behavior after upgrade
-    private void DoubleClick(object sender, EventArgs e)
-    {
-        score += 2;
-        scoreLabel.Text = $"Score: {score}";
-        UpdateButtonIcon();
+        Clickerbtn.ImageSource = icon;
     }
 }
