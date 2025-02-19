@@ -1,9 +1,11 @@
+using MobileApp;
+
 namespace MobiileApp;
 
 public partial class StartPage : ContentPage
 {
-	public List<ContentPage> lehed = new List<ContentPage>() { new TextPage(0), new FigurePage(1), new MobiileApp.Clicker(2), new Valgusfoor(3)};
-	public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage", "Clicker", "Valgusfoor" };
+	public List<ContentPage> lehed = new List<ContentPage>() { new TextPage(0), new FigurePage(1), new MobiileApp.Clicker(2), new Valgusfoor(3), new Datetime(4), new StepperSliderPage(5), new RGBSlider(6) };
+	public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage", "Clicker", "Valgusfoor", "DatePicker", "Stepper", "RGB Slider mudel" };
 	ScrollView sv;
 	VerticalStackLayout vsl;
 	public StartPage()
