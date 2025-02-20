@@ -4,8 +4,9 @@ namespace MobileApp
     {
         private Slider redSlider, greenSlider, blueSlider;
         private BoxView colorDisplay;
-        private Label hexLabel, lblRed, lblGreen, lblBlue, header;
-        private Button saveBtn, randomColorBtn;
+        private Label hexLabel, lblRed, lblGreen, lblBlue, header, hexCodeLabel;
+        private Button saveBtn, randomColorBtn, applyHexCodeBtn;
+        private Entry hexCodeEntry;
         private Stepper sizeStepper, cornerRadiusStepper, opacityStepper;
         private Frame mainFrame, redFrame, greenFrame, blueFrame;
 
@@ -23,9 +24,9 @@ namespace MobileApp
                 TextColor = Color.FromRgb(0, 0, 0)  // Используем Color.FromRgb для черного
             };
 
-            lblRed = new Label { Text = "Red: 0", TextColor = Color.FromRgb(0, 0, 0) };
-            lblGreen = new Label { Text = "Green: 0", TextColor = Color.FromRgb(0, 0, 0) };
-            lblBlue = new Label { Text = "Blue: 0", TextColor = Color.FromRgb(0, 0, 0) };
+            lblRed = new Label { Text = "Punane: 0", TextColor = Color.FromRgb(0, 0, 0) };
+            lblGreen = new Label { Text = "Roheline: 0", TextColor = Color.FromRgb(0, 0, 0) };
+            lblBlue = new Label { Text = "Sinine: 0", TextColor = Color.FromRgb(0, 0, 0) };
 
             redSlider = CreateSlider();
             greenSlider = CreateSlider();
@@ -39,9 +40,33 @@ namespace MobileApp
                 FontSize = 24,
             };
 
+            hexCodeLabel = new Label
+            {
+                Text = "Praegune Hex Code: #000000",
+                HorizontalOptions = LayoutOptions.Center,
+                FontSize = 18,
+                TextColor = Color.FromRgb(0, 0, 0),
+            };
+
+            hexCodeEntry = new Entry
+            {
+                Placeholder = "Sisestage Hex Code (e.g. #FF5733)",
+                HorizontalOptions = LayoutOptions.Center,
+                FontSize = 18,
+            };
+
+            applyHexCodeBtn = new Button
+            {
+                Text = "Rakenda Hex Code",
+                WidthRequest = 200,
+                HeightRequest = 40
+            };
+
+            applyHexCodeBtn.Clicked += ApplyHexCodeBtn_Clicked;
+
             saveBtn = new Button
             {
-                Text = "Save Hex Code",
+                Text = "Salvesta Hex Code",
                 WidthRequest = 200,
                 HeightRequest = 40
             };
@@ -49,12 +74,12 @@ namespace MobileApp
             saveBtn.Clicked += async (s, e) =>
             {
                 await Clipboard.SetTextAsync(hexLabel.Text);
-                await DisplayAlert("Save", "Hex Code copied to clipboard", "OK");
+                await DisplayAlert("Salvesta", "Hex Code lõikelauale kopeeritud", "OK");
             };
 
             randomColorBtn = new Button
             {
-                Text = "Random Color",
+                Text = "Juhuslik värv",
                 WidthRequest = 200,
                 HeightRequest = 40
             };
@@ -97,6 +122,10 @@ namespace MobileApp
             AbsoluteLayout.SetLayoutBounds(cornerRadiusStepper, new Rect(50, 620, 300, 40));
             AbsoluteLayout.SetLayoutBounds(sizeStepper, new Rect(50, 660, 300, 40));
 
+            AbsoluteLayout.SetLayoutBounds(hexCodeEntry, new Rect(20, 710, 320, 40));
+            AbsoluteLayout.SetLayoutBounds(applyHexCodeBtn, new Rect(50, 750, 300, 40));
+            AbsoluteLayout.SetLayoutBounds(hexCodeLabel, new Rect(20, 790, 320, 30));
+
             layout.Children.Add(header);
             layout.Children.Add(mainFrame);
             layout.Children.Add(randomColorBtn);
@@ -112,8 +141,15 @@ namespace MobileApp
             layout.Children.Add(opacityStepper);
             layout.Children.Add(cornerRadiusStepper);
             layout.Children.Add(sizeStepper);
+            layout.Children.Add(hexCodeEntry);
+            layout.Children.Add(applyHexCodeBtn);
+            layout.Children.Add(hexCodeLabel);
 
-            Content = layout;
+            Content = new ScrollView
+            {
+                Content = layout
+            };
+
 
             redSlider.ValueChanged += ColorSlider_ValueChanged;
             greenSlider.ValueChanged += ColorSlider_ValueChanged;
@@ -136,22 +172,39 @@ namespace MobileApp
             int green = (int)greenSlider.Value;
             int blue = (int)blueSlider.Value;
 
-            lblRed.Text = $"Red: {red}";
-            lblGreen.Text = $"Green: {green}";
-            lblBlue.Text = $"Blue: {blue}";
+            lblRed.Text = $"Punane: {red}";
+            lblGreen.Text = $"Roheline: {green}";
+            lblBlue.Text = $"Sinine: {blue}";
 
+            // Устанавливаем цвета для рамок
             redFrame.BackgroundColor = Color.FromRgb(red, 0, 0);
             greenFrame.BackgroundColor = Color.FromRgb(0, green, 0);
             blueFrame.BackgroundColor = Color.FromRgb(0, 0, blue);
 
+            // Устанавливаем основной цвет
             mainFrame.BackgroundColor = Color.FromRgb(red, green, blue);
             header.TextColor = Color.FromRgb(red, green, blue);
             lblRed.TextColor = Color.FromRgb(red, green, blue);
             lblGreen.TextColor = Color.FromRgb(red, green, blue);
             lblBlue.TextColor = Color.FromRgb(red, green, blue);
 
+            // Создаем Hex код цвета
             string hexCode = $"#{red:X2}{green:X2}{blue:X2}";
             hexLabel.Text = hexCode;
+            hexCodeLabel.Text = $"Praegune Hex Code: {hexCode}";
+
+            // Изменяем цвет слайдеров
+            redSlider.ThumbColor = Color.FromRgb(red, 0, 0);
+            greenSlider.ThumbColor = Color.FromRgb(0, green, 0);
+            blueSlider.ThumbColor = Color.FromRgb(0, 0, blue);
+
+            redSlider.MinimumTrackColor = Color.FromRgb(red, 0, 0);
+            greenSlider.MinimumTrackColor = Color.FromRgb(0, green, 0);
+            blueSlider.MinimumTrackColor = Color.FromRgb(0, 0, blue);
+
+            redSlider.MaximumTrackColor = Color.FromRgb(169, 169, 169);
+            greenSlider.MaximumTrackColor = Color.FromRgb(169, 169, 169);
+            blueSlider.MaximumTrackColor = Color.FromRgb(169, 169, 169);
         }
 
         private void RandomColorBtn_Clicked(object sender, EventArgs e)
@@ -164,6 +217,34 @@ namespace MobileApp
             redSlider.Value = rndRed;
             greenSlider.Value = rndGreen;
             blueSlider.Value = rndBlue;
+        }
+
+        private void ApplyHexCodeBtn_Clicked(object sender, EventArgs e)
+        {
+            string hexCode = hexCodeEntry.Text?.Trim();
+
+            if (string.IsNullOrEmpty(hexCode) || hexCode.Length != 7 || hexCode[0] != '#')
+            {
+                DisplayAlert("Kehtetu Hex Code", "Sisestage kehtiv hex code (e.g., #FF5733)", "OK");
+                return;
+            }
+
+            try
+            {
+                int red = Convert.ToInt32(hexCode.Substring(1, 2), 16);
+                int green = Convert.ToInt32(hexCode.Substring(3, 2), 16);
+                int blue = Convert.ToInt32(hexCode.Substring(5, 2), 16);
+
+                redSlider.Value = red;
+                greenSlider.Value = green;
+                blueSlider.Value = blue;
+
+                ColorSlider_ValueChanged(null, null);
+            }
+            catch
+            {
+                DisplayAlert("Kehtetu Hex Code", "Hex code sisestatud ei kehti.", "OK");
+            }
         }
 
         private void SizeStepper_ValueChanged(object sender, ValueChangedEventArgs e)
