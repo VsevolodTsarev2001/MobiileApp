@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using System;
@@ -13,6 +14,8 @@ namespace MobiileApp
         private Random random = new Random();
         bool isMelt = false;
         VerticalStackLayout vst;
+
+        private Frame leftEye, rightEye, smile, leftArm, rightArm, scarf;
 
         public Lummemame(int k)
         {
@@ -57,6 +60,54 @@ namespace MobiileApp
                 HasShadow = true
             };
 
+            // Styling and positioning the eyes
+            leftEye = new Frame
+            {
+                WidthRequest = 10,
+                HeightRequest = 10,
+                CornerRadius = 5,
+                BackgroundColor = Colors.Black
+            };
+            rightEye = new Frame
+            {
+                WidthRequest = 10,
+                HeightRequest = 10,
+                CornerRadius = 5,
+                BackgroundColor = Colors.Black
+            };
+
+            smile = new Frame
+            {
+                WidthRequest = 40,
+                HeightRequest = 20,
+                BackgroundColor = Colors.Transparent,
+                BorderColor = Colors.Black
+            };
+
+            leftArm = new Frame
+            {
+                WidthRequest = 50,
+                HeightRequest = 10,
+                BackgroundColor = Colors.Brown,
+                BorderColor = Colors.Black
+            };
+            rightArm = new Frame
+            {
+                WidthRequest = 50,
+                HeightRequest = 10,
+                BackgroundColor = Colors.Brown,
+                BorderColor = Colors.Black
+            };
+
+            // Creating a scarf
+            scarf = new Frame
+            {
+                WidthRequest = 90,
+                HeightRequest = 20,
+                BackgroundColor = Colors.Red,
+                BorderColor = Colors.Black
+            };
+
             vst = new VerticalStackLayout
             {
                 BackgroundColor = Colors.White
@@ -68,10 +119,28 @@ namespace MobiileApp
             AbsoluteLayout.SetLayoutBounds(body, new Rect(85, 140, 110, 110));
             AbsoluteLayout.SetLayoutBounds(baseCircle, new Rect(70, 250, 140, 140));
 
+
+            AbsoluteLayout.SetLayoutBounds(smile, new Rect(120, 120, 40, 20));
+            AbsoluteLayout.SetLayoutBounds(leftArm, new Rect(40, 180, 50, 10));
+            AbsoluteLayout.SetLayoutBounds(rightArm, new Rect(180, 180, 50, 10));
+            AbsoluteLayout.SetLayoutBounds(scarf, new Rect(110, 100, 90, 20));
+            AbsoluteLayout.SetLayoutBounds(leftEye, new Rect(120, 90, 10, 10));
+            AbsoluteLayout.SetLayoutBounds(rightEye, new Rect(150, 90, 10, 10));
+
+            // Переместите добавление поверх всех других элементов
+            snowmanLayout.Children.Add(leftEye);
+            snowmanLayout.Children.Add(rightEye);
+            snowmanLayout.Children.Add(smile);
+            snowmanLayout.Children.Add(scarf);
+            snowmanLayout.Children.Add(leftArm);
+            snowmanLayout.Children.Add(rightArm);
+
+            // Добавьте остальные элементы после них, чтобы они располагались под глазками, улыбкой и руками
             snowmanLayout.Children.Add(bucket);
             snowmanLayout.Children.Add(head);
             snowmanLayout.Children.Add(body);
             snowmanLayout.Children.Add(baseCircle);
+
 
             // Creating the action label
             actionLabel = new Label
@@ -79,7 +148,7 @@ namespace MobiileApp
                 Text = "Tegevus: ---",
                 HorizontalOptions = LayoutOptions.Center,
                 FontSize = 20,
-                FontFamily = "Minecraft",
+                FontFamily = "Lower Pixel Regular 400",
                 TextColor = Colors.Black
             };
 
@@ -102,9 +171,6 @@ namespace MobiileApp
             Button rotateButton = new Button { Text = "Pööra" };
             rotateButton.Clicked += async (s, e) => await Rotate();
 
-            Button fadeButton = new Button { Text = "Hägu" };
-            fadeButton.Clicked += async (s, e) => await Fade();
-
             Stepper sizeStepper = new Stepper(0.5, 2, 1, 0.1);
             sizeStepper.ValueChanged += (s, e) => Resize(e.NewValue);
 
@@ -114,7 +180,7 @@ namespace MobiileApp
                 Spacing = 10,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Start,
-                Children = { hideButton, showButton, colorButton, meltButton, ilmumaButton, rotateButton, fadeButton, sizeStepper }
+                Children = { hideButton, showButton, colorButton, meltButton, ilmumaButton, rotateButton, sizeStepper }
             };
 
             // Creating the ScrollView for controls
@@ -177,6 +243,18 @@ namespace MobiileApp
                     double currentY = initialY + (targetY - initialY) * (i / 10.0);
                     double currentRotation = initialRotation + (targetRotation - initialRotation) * (i / 10.0);
 
+                    AbsoluteLayout.SetLayoutBounds(leftEye, new Rect(90, 60, 60, 40));
+                    leftEye.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(rightEye, new Rect(140, 60, 60, 40));
+                    rightEye.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(smile, new Rect(120, 70, 60, 40));
+                    smile.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(scarf, new Rect(110, 80, 60, 40));
+                    scarf.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(leftArm, new Rect(60, 150, 60, 40));
+                    leftArm.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(rightArm, new Rect(190, 150, 60, 40));
+                    rightArm.Rotation = currentRotation;
                     AbsoluteLayout.SetLayoutBounds(bucket, new Rect(110, currentY, 60, 40));
                     bucket.Rotation = currentRotation;
 
@@ -192,6 +270,7 @@ namespace MobiileApp
                 head.Scale = scale;
                 body.Scale = scale;
                 baseCircle.Scale = scale;
+
                 await Task.Delay(200);
             }
 
@@ -247,6 +326,18 @@ namespace MobiileApp
                     double currentY = initialY + (targetY - initialY) * (i / 10.0);
                     double currentRotation = initialRotation + (targetRotation - initialRotation) * (i / 10.0);
 
+                    AbsoluteLayout.SetLayoutBounds(leftEye, new Rect(90, 60, 60, 40));
+                    leftEye.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(rightEye, new Rect(140, 60, 60, 40));
+                    rightEye.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(smile, new Rect(120, 70, 60, 40));
+                    smile.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(scarf, new Rect(110, 80, 60, 40));
+                    scarf.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(leftArm, new Rect(60, 150, 60, 40));
+                    leftArm.Rotation = currentRotation;
+                    AbsoluteLayout.SetLayoutBounds(rightArm, new Rect(190, 150, 60, 40));
+                    rightArm.Rotation = currentRotation;
                     AbsoluteLayout.SetLayoutBounds(bucket, new Rect(110, currentY, 60, 40));
                     bucket.Rotation = currentRotation;
 
@@ -280,31 +371,6 @@ namespace MobiileApp
             actionLabel.Text = "Tegevus: Lumememm on pööratud!";
         }
 
-        // Function to fade the snowman in and out
-        private async Task Fade()
-        {
-            actionLabel.Text = "Tegevus: Lumememm hägustub...";
-            for (int i = 0; i <= 10; i++)
-            {
-                double opacity = i / 10.0;
-                head.Opacity = opacity;
-                body.Opacity = opacity;
-                baseCircle.Opacity = opacity;
-                bucket.Opacity = opacity;
-                await Task.Delay(100);
-            }
 
-            for (int i = 10; i >= 0; i--)
-            {
-                double opacity = i / 10.0;
-                head.Opacity = opacity;
-                body.Opacity = opacity;
-                baseCircle.Opacity = opacity;
-                bucket.Opacity = opacity;
-                await Task.Delay(100);
-            }
-
-            actionLabel.Text = "Tegevus: Lumememm on nähtav!";
-        }
     }
 }
