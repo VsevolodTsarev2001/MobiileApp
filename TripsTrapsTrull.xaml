@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MobiileApp.TicTacToePage"
+             Title="Tic Tac Toe"
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <ScrollView>
+        <StackLayout Orientation="Vertical" Spacing="10" Padding="20">
+
+            <!-- Picker for Grid Size -->
+            <Picker x:Name="sizePicker" SelectedIndexChanged="SizePicker_SelectedIndexChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>3x3</x:String>
+                        <x:String>4x4</x:String>
+                        <x:String>5x5</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <!-- Grid for Tic-Tac-Toe -->
+            <Grid x:Name="gameGrid" RowSpacing="5" ColumnSpacing="5" Padding="10">
+                <Grid.RowDefinitions>
+                    <!-- Grid will dynamically change rows based on selected size -->
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <!-- Grid will dynamically change columns based on selected size -->
+                </Grid.ColumnDefinitions>
+            </Grid>
+
+            <!-- Control buttons -->
+            <Button Text="New Game" Clicked="NewGameButton_Click" WidthRequest="120"/>
+            <Button Text="Choose First Player" Clicked="ChooseFirstPlayerButton_Click" WidthRequest="180"/>
+            <Button Text="Show Rules" Clicked="ShowRulesButton_Click" WidthRequest="120"/>
+            <Button Text="Change Theme" Clicked="ChangeBackgroundButton_Click" WidthRequest="120"/>
+
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
