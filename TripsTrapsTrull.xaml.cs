@@ -67,7 +67,7 @@ public partial class TicTacToePage : ContentPage
                     FontSize = 24,
                     WidthRequest = 80,
                     HeightRequest = 80,
-                    BackgroundColor = Color.LightGray,
+                    BackgroundColor = Colors.LightGray,
                     StyleId = $"Cell{i}{j}"
                 };
                 button.Clicked += Cell_Click;
@@ -92,7 +92,7 @@ public partial class TicTacToePage : ContentPage
         // Place the player's mark and update game board
         gameBoard[row, col] = currentPlayer;
         button.Text = currentPlayer;
-        button.TextColor = currentPlayer == "X" ? Color.Blue : Color.Red;
+        button.TextColor = currentPlayer == "X" ? Colors.Blue : Colors.Red;
 
         // Check for winner
         if (CheckWinner())
@@ -124,7 +124,7 @@ public partial class TicTacToePage : ContentPage
         gameBoard[row, col] = "O";
         var button = gameGrid.Children[row * gridSize + col] as Button;
         button.Text = "O";
-        button.TextColor = Color.Red;
+        button.TextColor = Colors.Red;
 
         if (CheckWinner())
         {
@@ -201,6 +201,6 @@ public partial class TicTacToePage : ContentPage
     // Change background theme
     private void ChangeBackgroundButton_Click(object sender, EventArgs e)
     {
-        this.BackgroundColor = new Color(random.NextDouble(), random.NextDouble(), random.NextDouble());
+        this.BackgroundColor = new Color((float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble());
     }
 }
