@@ -2,14 +2,24 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MobiileApp.TicTacToePage"
-             Title="Tic Tac Toe"
+             Title="Krisp ja Nolk"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <ScrollView>
         <StackLayout Orientation="Vertical" Spacing="10" Padding="20">
 
-            <!-- Picker for Grid Size -->
-            <Picker x:Name="sizePicker" SelectedIndexChanged="SizePicker_SelectedIndexChanged">
+            <!-- Выбор режима игры -->
+            <Picker x:Name="gameModePicker" SelectedIndexChanged="GameModePicker_SelectedIndexChanged" Title="Valige mängurežiim">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Mängija vs Mängija</x:String>
+                        <x:String>Mängija vs Bot</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <!-- Выбор размера поля -->
+            <Picker x:Name="sizePicker" SelectedIndexChanged="SizePicker_SelectedIndexChanged" Title="Valige mänguväli">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>3x3</x:String>
@@ -19,22 +29,39 @@
                 </Picker.ItemsSource>
             </Picker>
 
-            <!-- Grid for Tic-Tac-Toe -->
-            <Grid x:Name="gameGrid" RowSpacing="5" ColumnSpacing="5" Padding="10">
+            <!-- Текущий игрок -->
+            <Label x:Name="currentPlayerLabel" Text="Hetkel mängib: X" FontSize="20" HorizontalOptions="Center" TextColor="Black" />
+
+            <!-- Счет -->
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                <Label x:Name="playerWinsLabel" Text="Mängija X: 0" FontSize="18" TextColor="Blue" />
+                <Label x:Name="botWinsLabel" Text="Bot O: 0" FontSize="18" TextColor="Red" />
+                <Label x:Name="drawsLabel" Text="Nõrk: 0" FontSize="18" TextColor="Gray" />
+            </StackLayout>
+
+            <Grid x:Name="gameGrid" RowSpacing="5" ColumnSpacing="5" Padding="10" BackgroundColor="LightGray">
                 <Grid.RowDefinitions>
-                    <!-- Grid will dynamically change rows based on selected size -->
+                    <!-- Grid будет динамически изменяться на основе выбранного размера -->
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <!-- Grid will dynamically change columns based on selected size -->
+                    <!-- Grid будет динамически изменяться на основе выбранного размера -->
                 </Grid.ColumnDefinitions>
             </Grid>
 
-            <!-- Control buttons -->
-            <Button Text="New Game" Clicked="NewGameButton_Click" WidthRequest="120"/>
-            <Button Text="Choose First Player" Clicked="ChooseFirstPlayerButton_Click" WidthRequest="180"/>
-            <Button Text="Show Rules" Clicked="ShowRulesButton_Click" WidthRequest="120"/>
-            <Button Text="Change Theme" Clicked="ChangeBackgroundButton_Click" WidthRequest="120"/>
 
+            <!-- Кнопки управления -->
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                <Button Text="Uus Mäng" Clicked="NewGameButton_Click" WidthRequest="120" StyleClass="buttonStyle"/>
+                <Button Text="Vali Esimene Mängija" Clicked="ChooseFirstPlayerButton_Click" WidthRequest="180" StyleClass="buttonStyle"/>
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                <Button Text="Näita Reeglid" Clicked="ShowRulesButton_Click" WidthRequest="120" StyleClass="buttonStyle"/>
+                <Button Text="Muuda Teema" Clicked="ChangeBackgroundButton_Click" WidthRequest="120" StyleClass="buttonStyle"/>
+            </StackLayout>
+
+            <!-- Кнопка отмены хода -->
+            <Button Text="Tühista Käik" Clicked="UndoMoveButton_Click" WidthRequest="120" BackgroundColor="LightGoldenrodYellow" TextColor="Black" HorizontalOptions="Center"/>
         </StackLayout>
     </ScrollView>
 </ContentPage>

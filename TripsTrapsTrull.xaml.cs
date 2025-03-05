@@ -1,26 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 
 namespace MobiileApp;
 
 public partial class TicTacToePage : ContentPage
 {
-    private string currentPlayer = "X"; // Initially Player X
+    private string currentPlayer = "X"; // Начальный игрок
     private string[,] gameBoard;
     private bool gameInProgress = true;
     private Random random = new Random();
-    private int gridSize = 3; // Default grid size
-    private string playerColor = "Black"; // Default color for player X
-    private string botColor = "Gray"; // Default color for bot O
-    private bool isBotTurn = false; // To keep track if it's bot's turn
+    private int gridSize = 3; // Начальный размер поля
+    private bool isBotTurn = false; // Для отслеживания хода бота
+    private int playerWins = 0;
+    private int botWins = 0;
+    private int draws = 0;
+    private Stack<(int row, int col, string player)> moveHistory = new Stack<(int, int, string)>();
 
     public TicTacToePage(int k)
     {
         InitializeComponent();
         ResetGameBoard();
+        
+
     }
 
-    // Handler for grid size selection
+    private void NewGameButton_Click(object sender, EventArgs e)
+    {
+        ResetGameBoard(); // Сбрасываем игровое поле
+    }
+
+    // Обработчик изменения размера поля
     private void SizePicker_SelectedIndexChanged(object sender, EventArgs e)
     {
         string selectedSize = sizePicker.SelectedItem.ToString();
@@ -39,14 +49,32 @@ public partial class TicTacToePage : ContentPage
         ResetGameBoard();
     }
 
-    // Reset game logic and recreate the grid dynamically
+    // Обработчик выбора режима игры
+    private void GameModePicker_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string selectedMode = gameModePicker.SelectedItem.ToString();
+       
+        if (selectedMode == "Mängija vs Mängija")
+        {
+            isBotTurn = false;  // Указываем, что ходит бот
+        }
+        else
+        {
+            isBotTurn = true; // Для игры "Игрок против игрока"
+        }
+        
+        ResetGameBoard();
+    }
+
+    // Сброс игры и создание новой сетки
     private void ResetGameBoard()
     {
         gameBoard = new string[gridSize, gridSize];
         gameInProgress = true;
-        currentPlayer = "X";
+        currentPlayer = "X";  // Начинаем с игрока X
+        currentPlayerLabel.Text = $"Hetkel mängib: {currentPlayer}";
 
-        // Clear existing buttons and redefine grid
+        // Очистить старые кнопки и пересоздать сетку
         gameGrid.Children.Clear();
         gameGrid.RowDefinitions.Clear();
         gameGrid.ColumnDefinitions.Clear();
@@ -57,7 +85,7 @@ public partial class TicTacToePage : ContentPage
             gameGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         }
 
-        // Create new buttons for the grid cells
+        // Создание новых кнопок для клеток
         for (int i = 0; i < gridSize; i++)
         {
             for (int j = 0; j < gridSize; j++)
@@ -71,12 +99,24 @@ public partial class TicTacToePage : ContentPage
                     StyleId = $"Cell{i}{j}"
                 };
                 button.Clicked += Cell_Click;
-                gameGrid.Children.Add(button, j, i);
+                gameGrid.Children.Add(button); // Добавить кнопку
+                Grid.SetRow(button, i);         // Установить строку
+                Grid.SetColumn(button, j);      // Установить колонку
+
+                // Добавление разделительных линий между ячейками
+                button.BorderColor = Colors.Black;
+                button.BorderWidth = 1;
             }
+        }
+
+        // Если выбран режим с ботом, то бот должен сделать первый ход
+        if (isBotTurn)
+        {
+            BotMove(); // Бот делает первый ход
         }
     }
 
-    // Handle cell click
+    // Обработчик клика по клетке
     private void Cell_Click(object sender, EventArgs e)
     {
         if (!gameInProgress) return;
@@ -86,75 +126,142 @@ public partial class TicTacToePage : ContentPage
         int row = int.Parse(cellName[4].ToString());
         int col = int.Parse(cellName[5].ToString());
 
-        // Skip if the cell is already filled
+        // Если клетка уже занята, выходим
         if (gameBoard[row, col] != null) return;
 
-        // Place the player's mark and update game board
+        // Размещение символа и обновление игрового поля
         gameBoard[row, col] = currentPlayer;
         button.Text = currentPlayer;
         button.TextColor = currentPlayer == "X" ? Colors.Blue : Colors.Red;
 
-        // Check for winner
+        // Сохранение хода для отмены
+        moveHistory.Push((row, col, currentPlayer));
+
+        // Проверка на победителя
         if (CheckWinner())
         {
-            DisplayAlert("Winner", $"{currentPlayer} wins!", "OK");
+            DisplayAlert("Võitja", $"{currentPlayer} võitis!", "OK");
             gameInProgress = false;
+            UpdateScore(currentPlayer);
+            AskForNewGame();
             return;
         }
 
-        // Switch turns
-        currentPlayer = currentPlayer == "X" ? "O" : "X";
+        // Проверка на ничью
+        if (IsBoardFull())
+        {
+            DisplayAlert("Tulemused", "Mäng lõppes viigiga!", "OK");
+            gameInProgress = false;
+            draws++; // Увеличиваем статистику ничьей
+            UpdateScore("Draw");
+            AskForNewGame();
+            return;
+        }
 
-        // If it's the bot's turn, make a move
+        // Смена игрока
+        currentPlayer = currentPlayer == "X" ? "O" : "X";
+        currentPlayerLabel.Text = $"Hetkel mängib: {currentPlayer}";
+
+        // Если ходит бот, делаем его ход
         if (currentPlayer == "O")
+        {
             BotMove();
+        }
     }
 
-    // Bot move logic (random move)
+
+    // Проверка ничьей
+    private bool CheckDraw()
+    {
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                if (gameBoard[i, j] == null)
+                {
+                    return false; // Если есть хотя бы одна пустая клетка, ничья невозможна
+                }
+            }
+        }
+        return true; // Если пустых клеток нет, значит ничья
+    }
+
+    // Логика хода бота (случайный ход)
     private void BotMove()
     {
         isBotTurn = true;
         int row, col;
+
+        // Пока очередь бота, он продолжает ходить
         do
         {
             row = random.Next(gridSize);
             col = random.Next(gridSize);
-        } while (gameBoard[row, col] != null); // Ensure the cell is empty
+        } while (gameBoard[row, col] != null); // Убедитесь, что клетка пуста
 
+        // Бот ставит O
         gameBoard[row, col] = "O";
         var button = gameGrid.Children[row * gridSize + col] as Button;
         button.Text = "O";
         button.TextColor = Colors.Red;
 
+        // Проверка на победителя
         if (CheckWinner())
         {
-            DisplayAlert("Winner", "Bot wins!", "OK");
+            DisplayAlert("Võitja", "Bot võitis!", "OK");
             gameInProgress = false;
+            UpdateScore("O");
+            AskForNewGame();
+        }
+        else if (IsBoardFull()) // Если поле заполнено и нет победителя, ничья
+        {
+            DisplayAlert("Tulemused", "Mäng lõppes viigiga!", "OK");
+            gameInProgress = false;
+            draws++; // Увеличиваем статистику ничьей
+            UpdateScore("Draw");
+            AskForNewGame();
         }
         else
         {
-            currentPlayer = "X"; // Switch back to player X
+            // После хода бота, переключаем очередь на игрока
+            currentPlayer = "X"; // Теперь ход игрока X
+            currentPlayerLabel.Text = $"Hetkel mängib: {currentPlayer}";
         }
-        isBotTurn = false;
+
+        isBotTurn = false; // Завершаем ход бота
     }
 
-    // Check for winner
-    private bool CheckWinner()
+    private bool IsBoardFull()
     {
-        // Check rows, columns, and diagonals for a win
         for (int i = 0; i < gridSize; i++)
         {
-            if (CheckLine(i, 0, 0, 1)) return true; // Check row
-            if (CheckLine(0, i, 1, 0)) return true; // Check column
+            for (int j = 0; j < gridSize; j++)
+            {
+                if (gameBoard[i, j] == null)
+                {
+                    return false; // Если есть пустая клетка, то не ничья
+                }
+            }
+        }
+        return true; // Если нет пустых клеток, то ничья
+    }
+
+    // Проверка победителя
+    private bool CheckWinner()
+    {
+        for (int i = 0; i < gridSize; i++)
+        {
+            if (CheckLine(i, 0, 0, 1)) return true; // Проверка по строкам
+            if (CheckLine(0, i, 1, 0)) return true; // Проверка по колонкам
         }
 
-        if (CheckLine(0, 0, 1, 1)) return true; // Check main diagonal
-        if (CheckLine(0, gridSize - 1, 1, -1)) return true; // Check anti diagonal
+        if (CheckLine(0, 0, 1, 1)) return true; // Проверка по диагонали
+        if (CheckLine(0, gridSize - 1, 1, -1)) return true; // Проверка по обратной диагонали
 
         return false;
     }
 
-    // Check a line (row, column, diagonal)
+    // Проверка линии (строка, колонка, диагональ)
     private bool CheckLine(int startX, int startY, int deltaX, int deltaY)
     {
         string first = gameBoard[startX, startY];
@@ -171,16 +278,45 @@ public partial class TicTacToePage : ContentPage
         return true;
     }
 
-    // Handle "New Game" button click
-    private void NewGameButton_Click(object sender, EventArgs e)
+    // Обновление статистики побед
+    private void UpdateScore(string winner)
     {
-        ResetGameBoard();
+        if (winner == "X") playerWins++;
+        else if (winner == "O") botWins++;
+        else draws++;
+
+        // Обновление UI
+        playerWinsLabel.Text = $"Mängija X: {playerWins}";
+        botWinsLabel.Text = $"Bot O: {botWins}";
+        drawsLabel.Text = $"Nõrk: {draws}";
     }
 
-    // Handle "Choose First Player" button click
+    // Запрос на новую игру
+    private async void AskForNewGame()
+    {
+        var result = await DisplayAlert("Mäng Lõppenud", "Kas soovite mängida uuesti?", "Jah", "Ei");
+        if (result)
+        {
+            ResetGameBoard();
+        }
+    }
+
+    // Смена фона
+    private void ChangeBackgroundButton_Click(object sender, EventArgs e)
+    {
+        this.BackgroundColor = new Color((float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble());
+    }
+
+    // Показать правила игры
+    private async void ShowRulesButton_Click(object sender, EventArgs e)
+    {
+        await DisplayAlert("Mängureeglid", "Eesmärk on saada kolm järjestikust markeeringut. Mängijad vahetavad käike. Esimene, kes saab kolm järjestikust markeeringut, võidab!", "OK");
+    }
+
+    // Выбор первого игрока
     private async void ChooseFirstPlayerButton_Click(object sender, EventArgs e)
     {
-        var action = await DisplayActionSheet("Who goes first?", "Cancel", null, "Player X", "Bot (O)");
+        var action = await DisplayActionSheet("Kes alustab?", "Tühista", null, "Mängija X", "Bot (O)");
         if (action == "Bot (O)")
         {
             currentPlayer = "O";
@@ -192,15 +328,23 @@ public partial class TicTacToePage : ContentPage
         }
     }
 
-    // Display game rules
-    private async void ShowRulesButton_Click(object sender, EventArgs e)
+    // Отмена последнего хода
+    private void UndoMoveButton_Click(object sender, EventArgs e)
     {
-        await DisplayAlert("Game Rules", "The goal is to get three marks in a row. Players take turns marking their spots. The first to get three marks in a row wins!", "OK");
-    }
+        if (moveHistory.Count == 0) return;
 
-    // Change background theme
-    private void ChangeBackgroundButton_Click(object sender, EventArgs e)
-    {
-        this.BackgroundColor = new Color((float)random.NextDouble(), (float)random.NextDouble(), (float)random.NextDouble());
+        // Восстановление последнего хода
+        var lastMove = moveHistory.Pop();
+        int row = lastMove.row;
+        int col = lastMove.col;
+        gameBoard[row, col] = null;
+
+        var button = gameGrid.Children[row * gridSize + col] as Button;
+        button.Text = "";
+        button.TextColor = Colors.Black;
+
+        // Смена игрока
+        currentPlayer = currentPlayer == "X" ? "O" : "X";
+        currentPlayerLabel.Text = $"Hetkel mängib: {currentPlayer}";
     }
 }
