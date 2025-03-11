@@ -21,8 +21,6 @@ public partial class TicTacToePage : ContentPage
     {
         InitializeComponent();
         ResetGameBoard();
-        
-
     }
 
     private void NewGameButton_Click(object sender, EventArgs e)

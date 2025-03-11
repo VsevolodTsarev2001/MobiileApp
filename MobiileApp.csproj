@@ -84,6 +84,9 @@
 	  <MauiXaml Update="FigurePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="kontaktid.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Lummemame.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
