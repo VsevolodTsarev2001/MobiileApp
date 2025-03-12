@@ -5,5 +5,10 @@
 	<uses-permission android:name="android.permission.READ_SMS" />
 	<uses-permission android:name="android.permission.SEND_SMS" />
 	<uses-permission android:name="android.permission.WRITE_SMS" />
+	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+	<uses-permission android:name="android.permission.CALL_PHONE" />
 	<application android:icon="@mipmap/applepay" />
 </manifest>
