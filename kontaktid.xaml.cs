@@ -1,268 +1,437 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.ApplicationModel;
-using System.Linq;
-
-namespace MobiileApp;
-
-public partial class kontaktid : ContentPage
+namespace MobiileApp
 {
-    TableView tabelview;
-    EntryCell nameEntry, phoneEntry, emailEntry, descriptionEntry;
-    TableSection peopleSection;
-    List<(string Name, string Phone, string Email, ImageSource Photo, string Description)> peopleList;
-    Button addPersonBtn, showAllBtn, deletePersonBtn;
-    Button sendEmailBtn, callBtn, addPhotoBtn, sendSmsBtn, sendGreetingsBtn;
-    Image userPhoto;
-
-    private StackLayout mainLayout;
-    private Random random = new Random();
-
-    public kontaktid(int k)
+    public partial class kontaktid : ContentPage
     {
-        peopleList = new List<(string, string, string, ImageSource, string)>();
+        List<Contact> contacts;
+        TableView tableView;
+        Entry searchEntry;
+        Entry messageEntry;
+        Random random = new Random();
+        Contact selectedContact = null;
+        Entry nameEntry, phoneEntry, emailEntry, descriptionEntry;
+        bool isFormVisible = false;
 
-        nameEntry = new EntryCell { Label = "Nimi:", Placeholder = "Sisesta inimese nimi", Keyboard = Keyboard.Default };
-        phoneEntry = new EntryCell { Label = "Telefon:", Placeholder = "Sisesta telefon", Keyboard = Keyboard.Telephone };
-        emailEntry = new EntryCell { Label = "Email:", Placeholder = "Sisesta email", Keyboard = Keyboard.Email };
-        descriptionEntry = new EntryCell { Label = "Kirjeldus:", Placeholder = "Sisesta kirjeldus" };
-        userPhoto = new Image { HeightRequest = 100, WidthRequest = 100 };
-
-        addPhotoBtn = new Button { Text = "Lisa foto" };
-        addPhotoBtn.Clicked += AddPhotoBtn_Clicked;
-
-        addPersonBtn = new Button { Text = "Lisa inimene" };
-        addPersonBtn.Clicked += AddPersonBtn_Clicked;
-
-        showAllBtn = new Button { Text = "Näita kõiki kasutajaid" };
-        showAllBtn.Clicked += ShowAllBtn_Clicked;
-
-        deletePersonBtn = new Button { Text = "Kustuta inimene" };
-        deletePersonBtn.Clicked += DeletePersonBtn_Clicked;
-
-        sendEmailBtn = new Button { Text = "Saada email" };
-        sendEmailBtn.Clicked += SendEmailBtn_Clicked;
-
-        callBtn = new Button { Text = "Helista" };
-        callBtn.Clicked += CallBtn_Clicked;
-
-        sendSmsBtn = new Button { Text = "Saada SMS" };
-        sendSmsBtn.Clicked += SendSmsBtn_Clicked;
-
-        sendGreetingsBtn = new Button { Text = "Saada tervitus" };
-        sendGreetingsBtn.Clicked += SendGreetingsBtn_Clicked;
-
-        peopleSection = new TableSection("Inimesed");
-
-        tabelview = new TableView
+        public kontaktid(int k)
         {
-            Root = new TableRoot
+            Title = "Sõbrade kontaktid";
+            contacts = new List<Contact>
             {
-                new TableSection("Lisa uus inimene") { nameEntry, phoneEntry, emailEntry, descriptionEntry }
-            },
-            HeightRequest = 250
-        };
+                new Contact { Name = "Mati", Phone = "+3721234567", Email = "mati@gmail.com", Description = "Lapsepõlve sõber", Image = "dotnet_bot.png" },
+                new Contact { Name = "Mari", Phone = "+3727654321", Email = "mari@gmail.com", Description = "Kolleeg tööl", Image = "dotnet_bot.png" }
+            };
 
-        mainLayout = new StackLayout
-        {
-            Children =
+            messageEntry = new Entry
             {
-                userPhoto,
-                addPhotoBtn,
-                addPersonBtn,
-                showAllBtn,
-                deletePersonBtn,
-                sendEmailBtn,
-                callBtn,
-                sendSmsBtn,
-                sendGreetingsBtn,
-                tabelview
-            }
-        };
+                Placeholder = "Sisesta sõnum...",
+                HorizontalOptions = LayoutOptions.Fill,
+                BackgroundColor = Colors.White,
+                TextColor = Colors.Black
+            };
 
-        Content = new ScrollView { Content = mainLayout };
-    }
-
-    private async void AddPhotoBtn_Clicked(object sender, EventArgs e)
-    {
-        var photo = await MediaPicker.PickPhotoAsync();
-        if (photo != null)
-        {
-            userPhoto.Source = ImageSource.FromFile(photo.FullPath);
-        }
-    }
-
-    private void AddPersonBtn_Clicked(object sender, EventArgs e)
-    {
-        if (!string.IsNullOrEmpty(nameEntry.Text))
-        {
-            peopleList.Add((nameEntry.Text, phoneEntry.Text, emailEntry.Text, userPhoto.Source, descriptionEntry.Text));
-        }
-    }
-
-    private bool isShowingAll = false;
-    private void ShowAllBtn_Clicked(object sender, EventArgs e)
-    {
-        if (isShowingAll)
-        {
-            peopleSection.Clear();
-            showAllBtn.Text = "Näita kõiki kasutajaid andmed";
-
-            (Content as ScrollView).Content = mainLayout;
-        }
-        else
-        {
-            var peopleStack = new StackLayout { Spacing = 10 };
-
-            foreach (var person in peopleList)
+            tableView = new TableView
             {
-                var stackLayout = new StackLayout
+                Intent = TableIntent.Form,
+                Root = new TableRoot(),
+                BackgroundColor = Colors.White
+            };
+
+            PopulateTable();
+
+            Button randomHolidayButton = new Button
+            {
+                Text = "Saada juhuslik pühadetervitus",
+                BackgroundColor = Color.FromArgb("#FF9800"),
+                TextColor = Colors.White,
+                VerticalOptions = LayoutOptions.Start,
+                HeightRequest = 50,
+                Margin = new Thickness(0, 5, 0, 10)
+            };
+            randomHolidayButton.Clicked += SendRandomHolidayGreeting;
+
+            HorizontalStackLayout buttonsLayout = new HorizontalStackLayout
+            {
+                Spacing = 10,
+                HorizontalOptions = LayoutOptions.Fill,
+                Children = { randomHolidayButton }
+            };
+
+            Button addContactButton = new Button
+            {
+                Text = "Lisa uus kontakt",
+                BackgroundColor = Color.FromArgb("#4CAF50"),
+                TextColor = Colors.White,
+                VerticalOptions = LayoutOptions.Start,
+                HeightRequest = 50,
+                Margin = new Thickness(0, 5, 0, 10)
+            };
+            addContactButton.Clicked += ToggleContactForm;
+
+            nameEntry = new Entry { Placeholder = "Nimi", BackgroundColor = Colors.White, TextColor = Colors.Black };
+            phoneEntry = new Entry { Placeholder = "Telefon", BackgroundColor = Colors.White, TextColor = Colors.Black, Keyboard = Keyboard.Telephone };
+            emailEntry = new Entry { Placeholder = "Email", BackgroundColor = Colors.White, TextColor = Colors.Black, Keyboard = Keyboard.Email };
+            descriptionEntry = new Entry { Placeholder = "Kirjeldus", BackgroundColor = Colors.White, TextColor = Colors.Black };
+
+            Button saveContactButton = new Button
+            {
+                Text = "Salvesta kontakt",
+                BackgroundColor = Color.FromArgb("#673AB7"),
+                TextColor = Colors.White,
+                HeightRequest = 50
+            };
+            saveContactButton.Clicked += SaveNewContact;
+
+            VerticalStackLayout contactForm = new VerticalStackLayout
+            {
+                Spacing = 10,
+                Padding = new Thickness(10),
+                BackgroundColor = Color.FromArgb("#E0E0E0"),
+                IsVisible = false,
+                Children = {
+                    new Label { Text = "Lisa uus kontakt", FontSize = 18, FontAttributes = FontAttributes.Bold, TextColor = Colors.Black },
+                    nameEntry,
+                    phoneEntry,
+                    emailEntry,
+                    descriptionEntry,
+                    saveContactButton
+                }
+            };
+
+            StackLayout layout = new StackLayout
+            {
+                Padding = new Thickness(10),
+                Spacing = 15,
+                BackgroundColor = Color.FromArgb("#F5F5F5"),
+                Children = { tableView, messageEntry, buttonsLayout, addContactButton, contactForm }
+            };
+
+            ScrollView scrollView = new ScrollView
+            {
+                Content = layout
+            };
+
+            Content = scrollView;
+        }
+
+        private void PopulateTable()
+        {
+            var tableSection = new TableSection("Kontaktid");
+
+            foreach (var contact in contacts)
+            {
+                var photo = new Image
                 {
-                    Orientation = StackOrientation.Horizontal,
-                    Padding = new Thickness(10),
-                    Spacing = 10,
-                    Children =
-                    {
-                        new Image { Source = person.Photo, HeightRequest = 50, WidthRequest = 50 },
-                        new StackLayout
-                        {
-                            Children =
-                            {
-                                new Label { Text = person.Name, FontAttributes = FontAttributes.Bold, FontSize = 16 },
-                                new Label { Text = $"Tel: {person.Phone}" },
-                                new Label { Text = $"Email: {person.Email}" },
-                                new Label { Text = $"Kirjeldus: {person.Description}" }
-                            }
-                        }
-                    }
+                    Source = contact.Image,
+                    HeightRequest = 40,
+                    WidthRequest = 40,
+                    Aspect = Aspect.AspectFill
                 };
 
-                var deleteButton = new Button
+                var photoTapGesture = new TapGestureRecognizer();
+                photoTapGesture.Tapped += async (s, e) => await ChangePhoto(contact);
+                photo.GestureRecognizers.Add(photoTapGesture);
+
+                var nameLabel = new Label
                 {
-                    Text = "❌",
+                    Text = contact.Name,
                     FontSize = 18,
-                    HorizontalOptions = LayoutOptions.EndAndExpand,
-                    VerticalOptions = LayoutOptions.Center
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Colors.Black
                 };
 
-                deleteButton.Clicked += (s, args) =>
+                var callButton = new Button
                 {
-                    // Получаем индекс текущего человека из списка
-                    var index = peopleList.IndexOf(person);
-                    if (index >= 0)
+                    Text = "Helista",
+                    BackgroundColor = Color.FromArgb("#4CAF50"),
+                    TextColor = Colors.White,
+                    HeightRequest = 40,
+                    WidthRequest = 80
+                };
+                callButton.Clicked += (sender, e) => MakeCall(contact.Phone);
+
+                var smsButton = new Button
+                {
+                    Text = "SMS",
+                    BackgroundColor = Color.FromArgb("#2196F3"),
+                    TextColor = Colors.White,
+                    HeightRequest = 40,
+                    WidthRequest = 80
+                };
+                smsButton.Clicked += (sender, e) => SendSms(contact.Phone);
+
+                var emailButton = new Button
+                {
+                    Text = "Email",
+                    BackgroundColor = Color.FromArgb("#FF9800"),
+                    TextColor = Colors.White,
+                    HeightRequest = 40,
+                    WidthRequest = 80
+                };
+                emailButton.Clicked += (sender, e) => SendEmail(contact.Email);
+
+                var layout = new HorizontalStackLayout
+                {
+                    Spacing = 10,
+                    Children = { photo, nameLabel, callButton, smsButton, emailButton }
+                };
+
+                var rowTapGesture = new TapGestureRecognizer();
+                rowTapGesture.Tapped += (s, e) => SelectContact(contact);
+                layout.GestureRecognizers.Add(rowTapGesture);
+
+                var viewCell = new ViewCell { View = layout };
+                tableSection.Add(viewCell);
+            }
+
+            tableView.Root.Clear();
+            tableView.Root.Add(tableSection);
+        }
+
+        private void SelectContact(Contact contact)
+        {
+            selectedContact = contact;
+
+            DisplayAlert("Kontakt valitud", $"Valisid kontakti {contact.Name}", "OK");
+        }
+
+        private async void MakeCall(string phoneNumber)
+        {
+            if (await Launcher.CanOpenAsync($"tel:{phoneNumber}"))
+            {
+                await Launcher.OpenAsync($"tel:{phoneNumber}");
+            }
+            else
+            {
+                await DisplayAlert("Viga", "Helistamine ei ole toetatud", "OK");
+            }
+        }
+
+        private async void SendSms(string phoneNumber)
+        {
+            if (selectedContact == null)
+            {
+                await DisplayAlert("Viga", "Palun vali kontakt", "OK");
+                return;
+            }
+
+            string message = messageEntry.Text ?? "Tere tulemast! Saadan sõnumi";
+            if (!string.IsNullOrWhiteSpace(phoneNumber) && Sms.Default.IsComposeSupported)
+            {
+                SmsMessage sms = new SmsMessage(message, new List<string> { phoneNumber });
+                await Sms.Default.ComposeAsync(sms);
+            }
+            else
+            {
+                await DisplayAlert("Viga", "SMS saatmine ei ole toetatud", "OK");
+            }
+        }
+
+        private async void SendEmail(string email)
+        {
+            if (selectedContact == null)
+            {
+                await DisplayAlert("Viga", "Palun vali kontakt", "OK");
+                return;
+            }
+
+            string message = messageEntry.Text ?? "Tere tulemast! Saadan emaili";
+            if (!string.IsNullOrWhiteSpace(email) && Email.Default.IsComposeSupported)
+            {
+                EmailMessage e_mail = new EmailMessage
+                {
+                    Subject = "Tervitus",
+                    Body = message,
+                    BodyFormat = EmailBodyFormat.PlainText,
+                    To = new List<string> { email }
+                };
+
+                await Email.Default.ComposeAsync(e_mail);
+            }
+            else
+            {
+                await DisplayAlert("Viga", "E-kirja saatmine ei ole toetatud", "OK");
+            }
+        }
+
+        private async Task ChangePhoto(Contact contact)
+        {
+            var cameraStatus = await Permissions.RequestAsync<Permissions.Camera>();
+
+            if (cameraStatus != PermissionStatus.Granted)
+            {
+                await DisplayAlert("Luba puudub", "Kaamera kasutamiseks on vaja luba.", "OK");
+                return;
+            }
+
+            try
+            {
+                var photo = await MediaPicker.CapturePhotoAsync();
+                if (photo != null)
+                {
+                    string localPath = Path.Combine(FileSystem.AppDataDirectory, $"{contact.Name}_photo.jpg");
+
+                    using (var stream = await photo.OpenReadAsync())
+                    using (var newFile = File.OpenWrite(localPath))
                     {
-                        // Удаляем элемент из peopleList
-                        peopleList.RemoveAt(index);
-
-                        // Удаляем элемент из peopleSection
-                        peopleSection.RemoveAt(index);
-
-                        // Обновление интерфейса (это важно, чтобы изменения были видны)
-                        tabelview.Root = new TableRoot
-                        {
-                            new TableSection("Lisa uus inimene") { nameEntry, phoneEntry, emailEntry },
-                            peopleSection
-                        };
+                        await stream.CopyToAsync(newFile);
                     }
-                };
 
-                var frame = new Frame
+                    contact.Image = localPath;
+                    PopulateTable();
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Viga", $"Foto muutmine ebaõnnestus: {ex.Message}", "OK");
+            }
+        }
+
+        private async void SendCustomMessage(object? sender, EventArgs e)
+        {
+            string message = messageEntry.Text;
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                await DisplayAlert("Viga", "Palun sisestage sõnum", "OK");
+                return;
+            }
+
+            if (contacts.Any())
+            {
+                var randomContact = contacts[random.Next(contacts.Count)];
+                bool sendSms = await DisplayAlert("Sõnumi saatmine", $"Saada sõnum \"{message}\" sõbrale {randomContact.Name}?", "SMS", "Email");
+
+                if (sendSms)
                 {
-                    Content = new StackLayout { Children = { stackLayout, deleteButton } },
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(10, 5),
-                    BorderColor = Colors.Gray,
-                    CornerRadius = 10,
-                    HasShadow = true,
-                    HeightRequest = 150
-                };
-
-                peopleStack.Children.Add(frame);
+                    SendSms(randomContact.Phone);
+                }
+                else
+                {
+                    SendEmail(randomContact.Email);
+                }
             }
-
-            mainLayout.Children.Add(peopleStack);
-            showAllBtn.Text = "Peida kõik kasutajad andmed";
-        }
-        isShowingAll = !isShowingAll;
-    }
-
-    private void DeletePersonBtn_Clicked(object sender, EventArgs e)
-    {
-        if (peopleList.Count > 0)
-        {
-            peopleList.RemoveAt(peopleList.Count - 1);
-            peopleSection.RemoveAt(peopleSection.Count - 1);
-        }
-    }
-
-    private void SendEmailBtn_Clicked(object sender, EventArgs e)
-    {
-        if (peopleList.Count > 0)
-        {
-            var email = peopleList[^1].Email;
-            Launcher.OpenAsync($"mailto:{email}");
-        }
-    }
-
-    private void CallBtn_Clicked(object sender, EventArgs e)
-    {
-        if (peopleList.Count > 0)
-        {
-            var phone = peopleList[^1].Phone;
-            PhoneDialer.Open(phone);
-        }
-    }
-
-    private async void SendSmsBtn_Clicked(object sender, EventArgs e)
-    {
-        if (peopleList.Count > 0)
-        {
-            var phone = peopleList[^1].Phone;
-            var message = "Тестовое сообщение!";
-
-            // Создаём объект SmsMessage и передаем номер телефона и сообщение
-            var smsMessage = new SmsMessage(message, phone);
-
-            // Отправляем SMS
-            await Sms.ComposeAsync(smsMessage);
-        }
-    }
-
-
-    private async void SendGreetingsBtn_Clicked(object sender, EventArgs e)
-    {
-        string[] greetings = new string[]
-        {
-        "Häid jõule ja head uut aastat!",
-        "Palju õnne sünnipäevaks!",
-        "Soovin sulle edu ja õnne!",
-        "Olgu sul alati päikesepaiste südames!",
-        "Kõike head uuel aastal!"
-        };
-
-        var randomGreeting = greetings[random.Next(greetings.Length)];
-
-        if (peopleList.Count > 0)
-        {
-            var phone = peopleList[^1].Phone;
-            var email = peopleList[^1].Email;
-
-            // Сначала отображаем диалог с выбором
-            var choice = await DisplayActionSheet("Vali saadetav tervitus", "Cancel", null, "E-mail", "SMS");
-
-            if (choice == "E-mail")
+            else
             {
-                Launcher.OpenAsync($"mailto:{email}?subject=Tervitus&body={randomGreeting}");
-            }
-            else if (choice == "SMS")
-            {
-                // Создаём объект SmsMessage с текстом и номером телефона
-                var smsMessage = new SmsMessage(randomGreeting, phone);
-
-                // Отправляем SMS
-                await Sms.ComposeAsync(smsMessage);
+                await DisplayAlert("Viga", "Kontaktide nimekiri on tühi", "OK");
             }
         }
+
+        private async void SendRandomHolidayGreeting(object? sender, EventArgs e)
+        {
+            var holidayGreetings = new List<string>
+            {
+                "Häid pühi!",
+                "Rõõmsaid jõule!",
+                "Head uut aastat!",
+                "Häid sõbrapäeva!",
+                "Häid jaanipäeva!",
+                "Häid lihavõttepühi!",
+                "Häid iseseisvuspäeva!",
+                "Häid vastlapäeva!"
+            };
+
+            var randomGreeting = holidayGreetings[random.Next(holidayGreetings.Count)];
+
+            if (contacts.Any())
+            {
+                var randomContact = contacts[random.Next(contacts.Count)];
+                bool sendSms = await DisplayAlert("Pühadetervitus", $"Saata pühadetervitus \"{randomGreeting}\" sõbrale {randomContact.Name}?", "SMS", "Email");
+
+                if (sendSms)
+                {
+                    messageEntry.Text = randomGreeting;
+                    SendSms(randomContact.Phone);
+                }
+                else
+                {
+                    messageEntry.Text = randomGreeting;
+                    SendEmail(randomContact.Email);
+                }
+            }
+            else
+            {
+                await DisplayAlert("Viga", "Kontaktide nimekiri on tühi", "OK");
+            }
+        }
+
+        private void ToggleContactForm(object sender, EventArgs e)
+        {
+            if (Content is ScrollView scrollView &&
+                scrollView.Content is StackLayout mainLayout &&
+                mainLayout.Children.Count >= 5 &&
+                mainLayout.Children[4] is VerticalStackLayout contactForm)
+            {
+                isFormVisible = !isFormVisible;
+                contactForm.IsVisible = isFormVisible;
+
+                if (sender is Button button)
+                {
+                    button.Text = isFormVisible ? "Peida vorm" : "Lisa uus kontakt";
+                }
+
+                if (!isFormVisible)
+                {
+                    ClearContactForm();
+                }
+            }
+        }
+
+        private void ClearContactForm()
+        {
+            nameEntry.Text = string.Empty;
+            phoneEntry.Text = string.Empty;
+            emailEntry.Text = string.Empty;
+            descriptionEntry.Text = string.Empty;
+        }
+
+        private async void SaveNewContact(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(nameEntry.Text) ||
+                string.IsNullOrWhiteSpace(phoneEntry.Text) ||
+                string.IsNullOrWhiteSpace(emailEntry.Text))
+            {
+                await DisplayAlert("Viga", "Palun täida kõik kohustuslikud väljad (nimi, telefon, email)", "OK");
+                return;
+            }
+
+            Contact newContact = new Contact
+            {
+                Name = nameEntry.Text,
+                Phone = phoneEntry.Text,
+                Email = emailEntry.Text,
+                Description = descriptionEntry.Text ?? "",
+                Image = "dotnet_bot.png"
+            };
+
+            contacts.Add(newContact);
+
+            PopulateTable();
+
+            ClearContactForm();
+
+            if (Content is ScrollView scrollView &&
+                scrollView.Content is StackLayout mainLayout &&
+                mainLayout.Children.Count >= 5 &&
+                mainLayout.Children[4] is VerticalStackLayout contactForm)
+            {
+                contactForm.IsVisible = false;
+                isFormVisible = false;
+
+                if (mainLayout.Children[3] is Button addButton)
+                {
+                    addButton.Text = "Lisa uus kontakt";
+                }
+            }
+
+            await DisplayAlert("Info", $"Kontakt {newContact.Name} on lisatud!", "OK");
+        }
+    }
+
+    public class Contact
+    {
+        public string Name { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Description { get; set; }
+        public string Image { get; set; }
     }
 }
