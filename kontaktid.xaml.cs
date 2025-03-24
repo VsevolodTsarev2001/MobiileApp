@@ -57,7 +57,7 @@ namespace MobiileApp
 
             Button addContactButton = new Button
             {
-                Text = "Lisa uus kontakt",
+                Text = "Ava vorm",
                 BackgroundColor = Color.FromArgb("#4CAF50"),
                 TextColor = Colors.White,
                 VerticalOptions = LayoutOptions.Start,
@@ -71,30 +71,72 @@ namespace MobiileApp
             emailEntry = new Entry { Placeholder = "Email", BackgroundColor = Colors.White, TextColor = Colors.Black, Keyboard = Keyboard.Email };
             descriptionEntry = new Entry { Placeholder = "Kirjeldus", BackgroundColor = Colors.White, TextColor = Colors.Black };
 
-            Button saveContactButton = new Button
+            var saveButton = new Button
             {
-                Text = "Salvesta kontakt",
+                Text = "Salvesta uus",
                 BackgroundColor = Color.FromArgb("#673AB7"),
                 TextColor = Colors.White,
-                HeightRequest = 50
+                HeightRequest = 50,
+                CornerRadius = 12,
+                FontAttributes = FontAttributes.Bold
+
             };
-            saveContactButton.Clicked += SaveNewContact;
+            saveButton.Clicked += SaveNewContact;
+
+            var editButton = new Button
+            {
+                Text = "Muuda",
+                BackgroundColor = Color.FromArgb("#03A9F4"),
+                TextColor = Colors.White,
+                HeightRequest = 50,
+                CornerRadius = 12,
+                FontAttributes = FontAttributes.Bold
+
+            };
+            editButton.Clicked += EditSelectedContact;
+
+            var deleteButton = new Button
+            {
+                Text = "Kustuta",
+                BackgroundColor = Color.FromArgb("#F44336"),
+                TextColor = Colors.White,
+                HeightRequest = 50,
+                CornerRadius = 12,
+                FontAttributes = FontAttributes.Bold
+
+            };
+            deleteButton.Clicked += DeleteSelectedContact;
 
             VerticalStackLayout contactForm = new VerticalStackLayout
             {
-                Spacing = 10,
-                Padding = new Thickness(10),
-                BackgroundColor = Color.FromArgb("#E0E0E0"),
+                Spacing = 15,
+                Padding = new Thickness(20),
+                Margin = new Thickness(0, 10),
+                BackgroundColor = Colors.White,
                 IsVisible = false,
+                Shadow = new Shadow { Radius = 10, Opacity = 0.3f, Offset = new Point(2, 2) },
                 Children = {
-                    new Label { Text = "Lisa uus kontakt", FontSize = 18, FontAttributes = FontAttributes.Bold, TextColor = Colors.Black },
+                    new Label
+                    {
+                        Text = "Kontaktivorm",
+                        FontSize = 20,
+                        FontAttributes = FontAttributes.Bold,
+                        TextColor = Color.FromArgb("#333")
+                    },
                     nameEntry,
                     phoneEntry,
                     emailEntry,
                     descriptionEntry,
-                    saveContactButton
+                    new HorizontalStackLayout
+                    {
+                        Spacing = 10,
+                        Children = { saveButton, editButton, deleteButton }
+                    }
                 }
             };
+
+
+
 
             StackLayout layout = new StackLayout
             {
@@ -161,7 +203,7 @@ namespace MobiileApp
                 var emailButton = new Button
                 {
                     Text = "Email",
-                    BackgroundColor = Color.FromArgb("#FF9800"),
+                    BackgroundColor = Colors.Red,
                     TextColor = Colors.White,
                     HeightRequest = 40,
                     WidthRequest = 80
@@ -190,8 +232,27 @@ namespace MobiileApp
         {
             selectedContact = contact;
 
+            nameEntry.Text = contact.Name;
+            phoneEntry.Text = contact.Phone;
+            emailEntry.Text = contact.Email;
+            descriptionEntry.Text = contact.Description;
+
+            if (Content is ScrollView scrollView &&
+                scrollView.Content is StackLayout mainLayout &&
+                mainLayout.Children[4] is VerticalStackLayout contactForm)
+            {
+                contactForm.IsVisible = true;
+                isFormVisible = true;
+
+                if (mainLayout.Children[3] is Button addButton)
+                {
+                    addButton.Text = "Peida vorm";
+                }
+            }
+
             DisplayAlert("Kontakt valitud", $"Valisid kontakti {contact.Name}", "OK");
         }
+
 
         private async void MakeCall(string phoneNumber)
         {
@@ -424,7 +485,57 @@ namespace MobiileApp
 
             await DisplayAlert("Info", $"Kontakt {newContact.Name} on lisatud!", "OK");
         }
+
+        private async void DeleteSelectedContact(object sender, EventArgs e)
+        {
+            if (selectedContact == null)
+            {
+                await DisplayAlert("Viga", "Palun vali kontakt, mida kustutada", "OK");
+                return;
+            }
+
+            bool confirm = await DisplayAlert("Kinnita", $"Kas soovid kontakti {selectedContact.Name} kustutada?", "Jah", "Ei");
+            if (confirm)
+            {
+                contacts.Remove(selectedContact);
+                selectedContact = null;
+                PopulateTable();
+                await DisplayAlert("Kustutatud", "Kontakt on kustutatud", "OK");
+            }
+        }
+
+        private async void EditSelectedContact(object sender, EventArgs e)
+        {
+            if (selectedContact == null)
+            {
+                await DisplayAlert("Viga", "Palun vali kontakt, mida muuta", "OK");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(nameEntry.Text) ||
+                string.IsNullOrWhiteSpace(phoneEntry.Text) ||
+                string.IsNullOrWhiteSpace(emailEntry.Text))
+            {
+                await DisplayAlert("Viga", "Palun täida kõik kohustuslikud väljad (nimi, telefon, email)", "OK");
+                return;
+            }
+
+            selectedContact.Name = nameEntry.Text;
+            selectedContact.Phone = phoneEntry.Text;
+            selectedContact.Email = emailEntry.Text;
+            selectedContact.Description = descriptionEntry.Text ?? "";
+
+            PopulateTable();
+            ClearContactForm();
+
+            await DisplayAlert("Uuendatud", "Kontakti andmed on muudetud", "OK");
+        }
+
+
     }
+
+
+
 
     public class Contact
     {
