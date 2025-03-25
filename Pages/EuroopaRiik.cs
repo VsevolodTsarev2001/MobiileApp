@@ -12,6 +12,7 @@ public class EuroopaRiik
     public string Pealinn { get; set; }
     public int Rahvaarv { get; set; }
     public string Lipp { get; set; }
+    public string Kirjaldus { get; set; }
 
     public override bool Equals(object obj) =>
         obj is EuroopaRiik other && other.Nimi == this.Nimi;

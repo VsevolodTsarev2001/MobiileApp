@@ -8,6 +8,7 @@
             <Image x:Name="lippImage" HeightRequest="100" />
             <Entry x:Name="nimiEntry" Placeholder="Riigi nimi" />
             <Entry x:Name="pealinnEntry" Placeholder="Pealinn" />
+            <Entry x:Name="kirjaldusEntry" Placeholder="Kirjaldus" />
             <Entry x:Name="rahvaarvEntry" Placeholder="Rahvaarv" Keyboard="Numeric" />
             <Entry x:Name="lippEntry" Placeholder="Lipu URL" />
             <Button Text="Uuenda" Clicked="OnUpdateClicked" />

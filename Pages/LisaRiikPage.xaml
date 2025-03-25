@@ -7,6 +7,7 @@
         <VerticalStackLayout Padding="20" Spacing="15">
             <Entry x:Name="nimiEntry" Placeholder="Riigi nimi" />
             <Entry x:Name="pealinnEntry" Placeholder="Pealinn" />
+            <Entry x:Name="kirjaldusEntry" Placeholder="kirjaldus" />   
             <Entry x:Name="rahvaarvEntry" Placeholder="Rahvaarv" Keyboard="Numeric" />
             <Entry x:Name="lippEntry" Placeholder="Lipu URL" />
             <Button Text="Lisa" Clicked="OnLisaClicked" />

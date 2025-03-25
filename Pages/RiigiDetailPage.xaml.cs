@@ -11,6 +11,7 @@ public partial class RiigiDetailPage : ContentPage
 
         nimiEntry.Text = riik.Nimi;
         pealinnEntry.Text = riik.Pealinn;
+        kirjaldusEntry.Text = riik.Kirjaldus;
         rahvaarvEntry.Text = riik.Rahvaarv.ToString();
         lippEntry.Text = riik.Lipp;
         lippImage.Source = riik.Lipp;
@@ -29,6 +30,7 @@ public partial class RiigiDetailPage : ContentPage
 
         riik.Nimi = nimiEntry.Text;
         riik.Pealinn = pealinnEntry.Text;
+        riik.Kirjaldus = kirjaldusEntry.Text;
         riik.Rahvaarv = rahvaarv;
         riik.Lipp = lippEntry.Text;
         lippImage.Source = riik.Lipp;

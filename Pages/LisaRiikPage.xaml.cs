@@ -16,6 +16,7 @@ public partial class LisaRiikPage : ContentPage
     {
         string nimi = nimiEntry.Text?.Trim();
         string pealinn = pealinnEntry.Text?.Trim();
+        string kirjaldus = kirjaldusEntry.Text?.Trim();
         string lipp = lippEntry.Text?.Trim();
         bool success = int.TryParse(rahvaarvEntry.Text, out int rahvaarv);
 
@@ -31,7 +32,7 @@ public partial class LisaRiikPage : ContentPage
             return;
         }
 
-        riigid.Add(new EuroopaRiik { Nimi = nimi, Pealinn = pealinn, Rahvaarv = rahvaarv, Lipp = lipp });
+        riigid.Add(new EuroopaRiik { Nimi = nimi, Pealinn = pealinn, Kirjaldus = kirjaldus, Rahvaarv = rahvaarv, Lipp = lipp });
         await Navigation.PopAsync();
     }
 }

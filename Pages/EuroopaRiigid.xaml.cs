@@ -11,8 +11,8 @@ public partial class EuroopaRiigid : ContentPage
         InitializeComponent();
         riigid = new ObservableCollection<EuroopaRiik>
         {
-            new EuroopaRiik { Nimi = "Eesti", Pealinn = "Tallinn", Rahvaarv = 1300000, Lipp = "https://flagcdn.com/w320/ee.png" },
-            new EuroopaRiik { Nimi = "Soome", Pealinn = "Helsinki", Rahvaarv = 5500000, Lipp = "https://flagcdn.com/w320/fi.png" }
+            new EuroopaRiik { Nimi = "Eesti", Pealinn = "Tallinn", Kirjaldus = "Text", Rahvaarv = 1300000, Lipp = "https://flagcdn.com/w320/ee.png" },
+            new EuroopaRiik { Nimi = "Soome", Pealinn = "Helsinki", Kirjaldus = "test", Rahvaarv = 5500000, Lipp = "https://flagcdn.com/w320/fi.png" }
         };
         RiigidList.ItemsSource = riigid;
     }
