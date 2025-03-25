@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MobiileApp.Pages.LisaRiikPage"
+             Title="Lisa uus riik">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Entry x:Name="nimiEntry" Placeholder="Riigi nimi" />
+            <Entry x:Name="pealinnEntry" Placeholder="Pealinn" />
+            <Entry x:Name="rahvaarvEntry" Placeholder="Rahvaarv" Keyboard="Numeric" />
+            <Entry x:Name="lippEntry" Placeholder="Lipu URL" />
+            <Button Text="Lisa" Clicked="OnLisaClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
